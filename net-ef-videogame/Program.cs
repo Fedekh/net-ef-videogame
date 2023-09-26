@@ -24,7 +24,7 @@ namespace net_ef_videogame
             int number = 1;
             while (number > 0 && number < 5)
             {
-                Console.WriteLine("Buongiorno e benvenuto al nostro gestionale. Scegli un opzione\r\n\n1) Inserisci Software house\r\n2) Inserire un nuovo videogioco\r\n3) Ricercare un videogioco per id\r\n4) Ricercare tutti i videogiochi aventi il nome contenente una determinata stringa inserita in input\r\n5) Cancellare un videogioco\r\n6) Chiudere il programma\r\n");
+                Console.WriteLine("Buongiorno e benvenuto al nostro gestionale. Scegli un opzione\r\n\n1) Inserisci Software house\r\n2) Inserire un nuovo videogioco\r\n3) Ricercare un videogioco per id\r\n4) Ricercare tutti i videogiochi aventi il nome contenente una determinata stringa inserita in input\r\n5) Cancellare un videogioco\r\n6) In base a un ID di una softawareHouse, trova tutti i videogiochi che ha sviluppato\r\n7) Chiudere il programma\r\n");
                 number = int.Parse(Console.ReadLine());
                 Console.WriteLine();
 
@@ -192,6 +192,75 @@ namespace net_ef_videogame
                         }
                           catch (Exception ex) { Console.WriteLine(ex.ToString()); }
                             
+
+                        break;
+                        case 6:
+                        try
+                        {
+                            {
+                                using (MovieContext db = new MovieContext())
+                                {
+                                    Console.WriteLine("In base a questa lista di softwarehouse che abbiamo in database, dove trovi tutti i dati relativi");
+
+                                    List<SoftwareHouse> softwareHouses = db.Software_houses.ToList();
+
+                                    if (softwareHouses.Count > 0)
+                                    {
+                                        foreach (SoftwareHouse softwareHouse in softwareHouses)
+                                        {
+                                            Console.WriteLine($"\n - ID: {softwareHouse.Id}, \n\rNome: {softwareHouse.Name} \n\rDescrizione: {softwareHouse.Description} \n\rCittà: {softwareHouse.City} \n\rPaese: {softwareHouse.Country}\n\r ");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Non ci sono softwarehouse");
+                                    }
+                                    long idChoise;
+
+                                    do
+                                    {
+                                        Console.WriteLine("Dammi un ID di una softwarehouse, cosi stampiamo tutti i suoi videogames\n\r");
+
+                                        if (long.TryParse(Console.ReadLine(), out  idChoise))
+                                        {
+                                            // Verifica se l'ID scelto è valido
+                                            if (softwareHouses.Any(softwareHouse => softwareHouse.Id == idChoise))
+                                            {
+                                                break; 
+                                            }
+                                            else
+                                            {
+                                                Console.WriteLine("ID non valido. Riprova.");
+                                            }
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("Input non valido. Inserisci un numero.");
+                                        }
+                                    } while (true);
+
+                                    SoftwareHouse softwarehouseChoise = db.Software_houses.FirstOrDefault(softwareHouse => softwareHouse.Id == idChoise);
+
+                                    List<Videogame> videogames = db.Videogames.Where(game => game.SoftwareHouseId == idChoise).ToList();
+
+                                    if (videogames.Count > 0)
+                                    {
+                                        Console.WriteLine($"La softwarehouse {softwarehouseChoise.Name} ha creato questi videogames:\n\r");
+
+                                        foreach (Videogame game in videogames)
+                                        {
+                                            Console.WriteLine($"\n\r {game.Name}, {game.Overview}\n\r");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine($"{softwarehouseChoise.Name} non ha sviluppato nessun videogioco");
+                                    }
+
+                                }
+                            }
+                        }
+                        catch (Exception ex) { Console.WriteLine(ex.ToString()); }
 
                         break;
 
