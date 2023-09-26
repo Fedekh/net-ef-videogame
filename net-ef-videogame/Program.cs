@@ -7,10 +7,13 @@
 //BONUS : aggiungere un’altra voce di menu
 //stampa tutti i videogiochi prodotti da una software house (all’utente verrà chiesto l’id della software house della quale mostrare i videogame)
 
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using net_ef_videogame.Classes;
 using net_ef_videogame.Database;
 using net_ef_videogame.Helpers;
 using System;
+using System.Linq.Expressions;
 
 namespace net_ef_videogame
 {
@@ -104,13 +107,91 @@ namespace net_ef_videogame
                         break;
 
                     case 3:
-                        Console.WriteLine("Ricerca un videogioco per ID");
+                        Console.WriteLine("Ricerca un videogioco per ID, inserisci l'ID desiderato");
+                        long idGame = int.Parse(Console.ReadLine());
+                        try
+                        {
+
+                            using (MovieContext db = new MovieContext())
+                            {
+                                Videogame videogame = db.Videogames.FirstOrDefault(game => game.Id == idGame);
+
+                                if (videogame != null)
+                                {
+                                    Console.WriteLine($"\nVideogioco trovato trovato: {videogame.Id} : {videogame.Name} --> {videogame.Overview}\n\n");
+                                }
+                                else
+                                {
+                                    // Il record con l'ID specificato non è stato trovato
+                                    Console.WriteLine($"\nNessun record trovato con ID: {idGame}\n");
+                                }
+                            }
+                        }
+                        catch (Exception ex) { Console.WriteLine(ex.ToString()); }
 
                         break;
 
                     case 4:
-                        Console.WriteLine("Non hai scelto nessuna delel opzioni, stai per uscire...");
+                        Console.WriteLine("Ottieni una lista di videogame, che contengono la parola.......\n");
+                        string word = Console.ReadLine();
+                        try
+                        {
 
+                            using (MovieContext db = new MovieContext())
+                            {
+
+
+                                List<Videogame> videogames = db.Videogames
+                                       .Where(game => game.Name.Contains(word))
+                                       .Include(game => game.SoftwareHouse)
+                                       .ToList();
+
+
+                                if (videogames.Count > 0)
+                                {
+                                    Console.WriteLine("Videogiochi trovati ....\n");
+                                    foreach (Videogame game in videogames)
+                                    {
+                                        Console.WriteLine($"-{game.Id} {game.Name}, {game.Overview}, Software House: {game.SoftwareHouse.Name}\n");
+
+                                    }
+                                }
+                                else
+                                {
+                                    Console.WriteLine($"Nessun videogiochi trovato con la parola {word}");
+                                }
+                            }
+                        }
+                        catch (Exception ex) { Console.WriteLine(ex.ToString()); }
+
+
+                        break;
+
+                    case 5:
+                        Console.WriteLine("Dammi un ID che cancelliamo un videogioco\n");
+                        long deleteId = int.Parse( Console.ReadLine() );
+
+                        try
+                        {
+
+                            using (MovieContext db = new MovieContext())
+                            {
+                                Videogame videogame = db.Videogames.Include(a => a.SoftwareHouse).FirstOrDefault(game => game.Id == deleteId);
+
+                                if (videogame != null)
+                                {
+                                    db.Videogames.Remove(videogame);
+                                    db.SaveChanges();
+                                    Console.WriteLine($"\nVideogioco {videogame.Name}, con ID {videogame.Id}\n\r della softarehouse {videogame.SoftwareHouse.Name} eliminato correttamente\n");
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Videogioco non trovato.");
+                                }
+                            }
+                        }
+                          catch (Exception ex) { Console.WriteLine(ex.ToString()); }
+                            
 
                         break;
 
